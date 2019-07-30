@@ -15,7 +15,7 @@ class DownloadsTableModel extends AbstractTableModel
             JProgressBar.class, String.class, String.class, String.class, String.class, String.class};
 
     // The table's list of downloads.
-    private ArrayList<Download> downloadList = new ArrayList<Download>();
+    public ArrayList<Download> downloadList = new ArrayList<Download>();
 
     // Add a new download to the table.
     public void addDownload(Download download) {
@@ -69,7 +69,21 @@ class DownloadsTableModel extends AbstractTableModel
         switch (col) {
             case 0: // URL
                 return download.getUrl();
-
+            case 1: // Size
+                long size = download.getSize();
+                return (size == -1) ? "" : Float.toString((float)size/1048576);
+            case 2: // Progress
+                return new Float(download.getProgress());
+            case 3: //Speed
+                return download.getSpeed();
+            case 4: //Avg Speed
+                return download.getAvgSpeed();
+            case 5: //Elapsed Time
+                return download.getElapsedTime();
+            case 6: //Remaining Time
+                return download.getRemainingTime();
+            case 7: // Status
+                return Download.STATUSES[download.getStatus()];
         }
         return "";
     }
