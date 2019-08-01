@@ -49,7 +49,7 @@ class Download extends Observable implements Runnable {
         if(remainingTime<0)   return "Unknown";
         else    return formatTime(remainingTime);
     }
-    public String formatTime(long time) { //time in seconds
+    public String formatTime(long time) {
         String s="";
         s+=(String.format("%02d", time/3600))+":";
         time%=3600;

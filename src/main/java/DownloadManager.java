@@ -47,27 +47,28 @@ public class DownloadManager extends JFrame
         JButton count1 = new JButton("Download");
         count1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String count= limitTextField.getText();
-                int value=Integer.parseInt(count);
-                int prev=0;
-                if(remaining.size()==0)
-                {
-                    start(tableModel,0,value);
-                    for(int z=0;z<value;z++)
-                    {
-                        remaining.add(tableModel.downloadList.get(z));
-                    }
-                }else
-                {
-                    if(ret(tableModel,remaining.size()-prev,remaining.size())==1) {
-                        start(tableModel, remaining.size(),remaining.size()+value);
+                String count = limitTextField.getText();
+                int value = Integer.parseInt(count);
+                int prev = 0;
+                System.out.println("vale is "+value);
+                System.out.println("table "+tableModel.downloadList.size());
+                while (tableModel.downloadList.size() > remaining.size()) {
+                    if (remaining.size() == 0) {
+                        start(tableModel, 0, value);
                         for (int z = 0; z < value; z++) {
                             remaining.add(tableModel.downloadList.get(z));
                         }
-                    }
-                    else
-                    {
-                        JOptionPane.showMessageDialog(null,"Previous is not completed");
+                    } else {
+                   //     System.out.println("now in elase");
+                        if (ret(tableModel, remaining.size() - value, remaining.size()) == 1  ) {
+                            start(tableModel, remaining.size(), remaining.size() + value);
+                            for (int z = 0; z < value; z++) {
+                                remaining.add(tableModel.downloadList.get(z));
+                            }
+                        }
+//                        } else {
+//                            JOptionPane.showMessageDialog(null, "Previous is not completed");
+//                        }
                     }
                 }
             }
