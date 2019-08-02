@@ -147,9 +147,7 @@ class Download extends Observable implements Runnable {
             }
             if (status == DOWNLOADING) {
                 status = COMPLETE;
-//                JOptionPane.showMessageDialog(null,"Download success...!");
-//                Toast.makeText(getApplicationContext(),"Hello Javatpoint",Toast.LENGTH_SHORT).show();
-                Toas
+                JOptionPane.showMessageDialog(null,"Download success...!");
                 stateChanged();
             }
         } catch (Exception e) {
