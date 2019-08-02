@@ -3,7 +3,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 class DownloadsTableModel extends AbstractTableModel
         implements Observer {
-    private static final String[] columnNames = {"URL", "Size in MB", "Progress", "Speed in KB/s",
+    private static final String[] columnNames = {"URL", "Size in MB", "Progress", "Speed in MB/s",
             "Avg Speed in KB/s", "Elapsed Time", "Remaing Time" ,"Status"};
     private static final Class[] columnClasses = {String.class, String.class,
             JProgressBar.class, String.class, String.class, String.class, String.class, String.class};

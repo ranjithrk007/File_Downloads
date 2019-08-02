@@ -37,7 +37,7 @@ class Download extends Observable implements Runnable {
         return size;
     }
     public float getSpeed() {
-        return speed;
+        return speed*1000;
     }
     public float getAvgSpeed() {
         return avgSpeed;
@@ -147,7 +147,9 @@ class Download extends Observable implements Runnable {
             }
             if (status == DOWNLOADING) {
                 status = COMPLETE;
-                JOptionPane.showMessageDialog(null,"Download success...!");
+//                JOptionPane.showMessageDialog(null,"Download success...!");
+//                Toast.makeText(getApplicationContext(),"Hello Javatpoint",Toast.LENGTH_SHORT).show();
+                Toas
                 stateChanged();
             }
         } catch (Exception e) {

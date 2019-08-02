@@ -2,6 +2,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.*;
 import javax.swing.event.*;
 public class DownloadManager extends JFrame
@@ -14,6 +17,7 @@ public class DownloadManager extends JFrame
     private JButton cancelButton, clearButton;
     private Download selectedDownload;
     private boolean clearing;
+    int value,end;
     private static Queue<URL> queue=new LinkedList<URL>();
     public DownloadManager() {
         setTitle("Download Manager");
@@ -44,33 +48,10 @@ public class DownloadManager extends JFrame
         String count= limitTextField.getText();
         System.out.println(count);
         JButton addButton = new JButton("Add Download");
-        JButton count1 = new JButton("Download");
-        count1.addActionListener(new ActionListener() {
+        JButton download = new JButton("Download");
+        download.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String count = limitTextField.getText();
-                int value = Integer.parseInt(count);
-                int prev = 0;
-                System.out.println("vale is "+value);
-                System.out.println("table "+tableModel.downloadList.size());
-                while (tableModel.downloadList.size() > remaining.size()) {
-                    if (remaining.size() == 0) {
-                        start(tableModel, 0, value);
-                        for (int z = 0; z < value; z++) {
-                            remaining.add(tableModel.downloadList.get(z));
-                        }
-                    } else {
-                   //     System.out.println("now in elase");
-                        if (ret(tableModel, remaining.size() - value, remaining.size()) == 1  ) {
-                            start(tableModel, remaining.size(), remaining.size() + value);
-                            for (int z = 0; z < value; z++) {
-                                remaining.add(tableModel.downloadList.get(z));
-                            }
-                        }
-//                        } else {
-//                            JOptionPane.showMessageDialog(null, "Previous is not completed");
-//                        }
-                    }
-                }
+                downloadaction();
             }
         });
         addButton.addActionListener(new ActionListener() {
@@ -79,7 +60,7 @@ public class DownloadManager extends JFrame
             }
         });
         addPanel.add(addButton);
-        addPanel.add(count1);
+        addPanel.add(download);
         tableModel = new DownloadsTableModel();
         table = new JTable(tableModel);
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -89,7 +70,7 @@ public class DownloadManager extends JFrame
         });
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         ProgressRenderer renderer = new ProgressRenderer(0, 100);
-        renderer.setStringPainted(true); // show progress text
+        renderer.setStringPainted(true);
         table.setDefaultRenderer(JProgressBar.class, renderer);
         table.setRowHeight(
                 (int) renderer.getPreferredSize().getHeight());
@@ -137,10 +118,92 @@ public class DownloadManager extends JFrame
         getContentPane().add(downloadsPanel, BorderLayout.CENTER);
         getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
     }
+    ExecutorService service = Executors.newFixedThreadPool(4);
+    public boolean startDownload(final DownloadsTableModel tableModel, final int start, final int end1)
+    {
+        start(tableModel,start,end1);
+        SwingWorker swingWorker=new SwingWorker() {
+            @Override
+            protected String doInBackground() throws Exception {
+
+
+                for(int i=start;i<end1;) {
+                if (tableModel.downloadList.get(i).getStatus() == 2) {
+                    System.out.println(tableModel.downloadList.get(i) + " downloaded");
+                    i++;
+                }
+            }
+                return "ok";
+            }
+
+            @Override
+            protected void done()
+            {
+                try {
+                    String msg= (String) get();
+                    System.out.println("ok");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+            };
+        swingWorker.execute();
+        return true;
+    }
+    private void downloadaction() {
+
+        String parallelcount = limitTextField.getText();
+        value = Integer.parseInt(parallelcount);
+        System.out.println("vale is " + value);
+        System.out.println("table " + tableModel.downloadList.size());
+
+//        for(int k=0;k<tableModel.downloadList.size();)
+//        {
+//            if(startDownload(tableModel,k,k+value))
+//            {
+//                k=k+value;
+//            }
+//
+//        }
+        while (tableModel.downloadList.size() > remaining.size()) {
+            if (remaining.size() == 0) {
+                service.submit(new Runnable() {
+                    public void run() {
+                        start(tableModel, 0, value);
+                    }
+                });
+
+                for (int z = 0; z < value; z++) {
+                    remaining.add(tableModel.downloadList.get(z));
+                }
+            } else {
+                if (checker(tableModel, remaining.size() - value, remaining.size()) == 1) {
+                    service.submit(new Runnable() {
+                        public void run() {
+                            start(tableModel, remaining.size(), remaining.size() + value);
+                        }
+                    });
+                    start(tableModel, remaining.size(), remaining.size() + value);
+                    for (int z = 0; z < value; z++) {
+                        remaining.add(tableModel.downloadList.get(z));
+                    }
+                }
+            }
+            System.out.println("remaining " + remaining.size());
+        }
+    }
+
     public void start(DownloadsTableModel tableModel,int value,int end)
     {
         for(int i=value;i<end;i++)
         {
+            if(tableModel.downloadList.size()<=i)
+            {
+                System.out.println("ended");
+                break;
+            }
             tableModel.downloadList.get(i).resume();
         }
         System.out.println("started");
@@ -155,14 +218,14 @@ public class DownloadManager extends JFrame
             Download download=new Download(verifiedUrl);
             download.pause();
             tableModel.addDownload(download);
-            addTextField.setText(""); // reset add text field
+            addTextField.setText("");
         } else {
             JOptionPane.showMessageDialog(this,
                     "Invalid Download URL", "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-    public int ret(DownloadsTableModel tableModel,int value,int end)
+    public int checker(DownloadsTableModel tableModel,int value,int end)
     {
         for(int i=value;i<end;i++)
         {
